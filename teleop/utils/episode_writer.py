@@ -18,9 +18,9 @@ class EpisodeWriter():
         logger_mp.info("==> EpisodeWriter initializing...\n")
         self.task_dir = task_dir
         self.text = {
-            "goal": "Pick up the red cup on the table.",
-            "desc": "task description",
-            "steps":"step1: do this; step2: do that; ...",
+            "goal": "",
+            "desc": "",
+            "steps":"",
         }
         if task_goal is not None:
             self.text['goal'] = task_goal
@@ -68,10 +68,10 @@ class EpisodeWriter():
                 "depth": {"width":self.image_size[0], "height":self.image_size[1], "fps":self.frequency},
                 "audio": {"sample_rate": 16000, "channels": 1, "format":"PCM", "bits":16},    # PCM_S16
                 "joint_names":{
-                    "left_arm":   ['kLeftShoulderPitch' ,'kLeftShoulderRoll', 'kLeftShoulderYaw', 'kLeftElbow', 'kLeftWristRoll', 'kLeftWristPitch', 'kLeftWristyaw'],
-                    "left_ee":  [],
-                    "right_arm":  [],
-                    "right_ee": [],
+                    "left_arm":   ['kLeftShoulderPitch', 'kLeftShoulderRoll', 'kLeftShoulderYaw', 'kLeftElbow', 'kLeftWristRoll', 'kLeftWristPitch', 'kLeftWristyaw'],
+                    "left_ee":  ['kLeftHandThumb', 'kLeftHandThumbAux' 'kLeftHandIndex', 'kLeftHandMiddle', 'kLeftHandRing', 'kLeftHandPinky'],
+                    "right_arm":  ['kRightShoulderPitch', 'kRightShoulderRoll', 'kRightShoulderYaw', 'kRightElbow', 'kRightWristRoll', 'kRightWristPitch', 'kRightWristYaw'],
+                    "right_ee": ['kRightHandThumb', 'kRightHandThumbAux' 'kRightHandIndex', 'kRightHandMiddle', 'kRightHandRing', 'kRightHandPinky'],
                     "body":       [],
                 },
 
@@ -122,7 +122,7 @@ class EpisodeWriter():
         logger_mp.info(f"==> New episode created: {self.episode_dir}")
         return True  # Return True if the episode is successfully created
         
-    def add_item(self, colors, depths=None, states=None, actions=None, tactiles=None, audios=None, sim_state=None):
+    def add_item(self, colors, depths=None, states=None, actions=None, tactiles=None, audios=None, sim_state=None,sub_index=0):
         # Increment the item ID
         self.item_id += 1
         # Create the item data dictionary
@@ -135,6 +135,7 @@ class EpisodeWriter():
             'tactiles': tactiles,
             'audios': audios,
             'sim_state': sim_state,
+            'sub_index': sub_index
         }
         # Enqueue the item data
         self.item_data_queue.put(item_data)

@@ -176,7 +176,7 @@ class TeleData:
     left_pinch_value: float = None    # float (1x.0 ~ 0.0) pinch distance between index and thumb
     right_pinch_value: float = None   # float (1x.0 ~ 0.0) pinch distance between index and thumb
     left_trigger_value: float = None  # float (10.0 ~ 0.0) trigger pull depth
-    right_trigger_value: float = None # float (10.0 ~ 0.0) trigger pull depth
+    right_trigger_value: float = None # float (10.0 ~ 0.0) trigger pull depth 
     tele_state: TeleStateData = field(default_factory=TeleStateData)
 
 
@@ -405,6 +405,6 @@ class TeleVuerWrapper:
                 left_arm_pose=left_IPunitree_Brobot_waist_arm,
                 right_arm_pose=right_IPunitree_Brobot_waist_arm,
                 left_trigger_value=10.0 - self.tvuer.left_controller_trigger_value * 10,
-                right_trigger_value=10.0 - self.tvuer.right_controller_trigger_value * 10,
+                right_trigger_value=10.0 - self.tvuer.right_controller_trigger_value * 10, 
                 tele_state=controller_state
             )
