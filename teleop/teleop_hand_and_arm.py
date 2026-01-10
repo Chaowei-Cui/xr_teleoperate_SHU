@@ -1,5 +1,7 @@
 
 # python teleop_hand_and_arm.py --record --motion 
+# python teleop_hand_and_arm.py --record --motion 
+# python teleop_hand_and_arm.py --record --motion 
 
 import numpy as np
 import time
@@ -60,7 +62,7 @@ def on_press(key):
         SUB_TASK_INDEX = 0
     elif key == 'p':
         SUB_TASK_INDEX += 1
-        print(f"*\n*\n*\n*\n*\n*************** sub task: {SUB_TASK_INDEX} *\n*\n*\n*\n*\n*\n************************************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
     else:
         logger_mp.warning(f"[on_press] {key} was pressed, but no action is defined for this key.")
 
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--ipc', action = 'store_true', help = 'Enable IPC server to handle input; otherwise enable sshkeyboard')
     parser.add_argument('--record', action = 'store_true', help = 'Enable data recording')
     parser.add_argument('--task-dir', type = str, default = './utils/data/', help = 'path to save data')
-    parser.add_argument('--task-name', type = str, default = 'open_charge_door', help = 'task name for recording')
+    parser.add_argument('--task-name', type = str, default = 'open_back_door', help = 'task name for recording')
     parser.add_argument('--task-desc', type = str, default = '', help = 'task goal for recording')
 
     args = parser.parse_args()
@@ -127,13 +129,13 @@ if __name__ == '__main__':
         }
     else:
         img_config = {
-            'fps': 30,
+            'fps': 15,
             'head_camera_type': 'realsense',
             'head_camera_image_shape': [480, 640],  # Head camera resolution
-            'head_camera_id_numbers': ["243422072975"],
+            'head_camera_id_numbers': ["243422072975", "235422300620"],  
             'wrist_camera_type': 'realsense',
             'wrist_camera_image_shape': [480, 640],  # Wrist camera resolution
-            'wrist_camera_id_numbers': ["230322271901","230322273453"],
+            'wrist_camera_id_numbers': ["230322273453", "230322271901"], 
 
         }
 
@@ -354,19 +356,24 @@ if __name__ == '__main__':
             #     time.sleep(1)
             
 
-
+            # 右手B按钮控制: 按下时右手闭合,松开时双手张开
             if tele_data.tele_state.right_bButton:
                 with left_hand_pos_array.get_lock():
                     left_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
                 with right_hand_pos_array.get_lock():
                     right_hand_pos_array[:] = np.array([1.52, 0, 0, 1.47, 1.47, 1.47])
 
+            elif tele_data.tele_state.left_bButton:
+                with left_hand_pos_array.get_lock():
+                    left_hand_pos_array[:] = np.array([1.52, 0, 0, 1.47, 1.47, 1.47])
+                with right_hand_pos_array.get_lock():
+                    right_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
+
             else:
                 with left_hand_pos_array.get_lock():
                     left_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
                 with right_hand_pos_array.get_lock():
                     right_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
-
                     
 
         elif args.ee == "dex1" and args.xr_mode == "hand":
