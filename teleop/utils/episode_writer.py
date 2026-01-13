@@ -11,7 +11,7 @@ import logging_mp
 logger_mp = logging_mp.get_logger(__name__)
 
 class EpisodeWriter():
-    def __init__(self, task_dir, task_goal=None, frequency=30, image_size=[640, 480], rerun_log = True):
+    def __init__(self, task_dir, task_goal=None, frequency=15, image_size=[640, 480], rerun_log = True):
         """
         image_size: [width, height]
         """
@@ -69,9 +69,9 @@ class EpisodeWriter():
                 "audio": {"sample_rate": 16000, "channels": 1, "format":"PCM", "bits":16},    # PCM_S16
                 "joint_names":{
                     "left_arm":   ['kLeftShoulderPitch', 'kLeftShoulderRoll', 'kLeftShoulderYaw', 'kLeftElbow', 'kLeftWristRoll', 'kLeftWristPitch', 'kLeftWristyaw'],
-                    "left_ee":  ['kLeftHandThumb', 'kLeftHandThumbAux' 'kLeftHandIndex', 'kLeftHandMiddle', 'kLeftHandRing', 'kLeftHandPinky'],
+                    "left_ee":  ['kLeftHandThumb', 'kLeftHandThumbAux', 'kLeftHandIndex', 'kLeftHandMiddle', 'kLeftHandRing', 'kLeftHandPinky'],
                     "right_arm":  ['kRightShoulderPitch', 'kRightShoulderRoll', 'kRightShoulderYaw', 'kRightElbow', 'kRightWristRoll', 'kRightWristPitch', 'kRightWristYaw'],
-                    "right_ee": ['kRightHandThumb', 'kRightHandThumbAux' 'kRightHandIndex', 'kRightHandMiddle', 'kRightHandRing', 'kRightHandPinky'],
+                    "right_ee": ['kRightHandThumb', 'kRightHandThumbAux', 'kRightHandIndex', 'kRightHandMiddle', 'kRightHandRing', 'kRightHandPinky'],
                     "body":       [],
                 },
 

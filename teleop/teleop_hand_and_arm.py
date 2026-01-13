@@ -1,7 +1,5 @@
 
 # python teleop_hand_and_arm.py --record --motion 
-# python teleop_hand_and_arm.py --record --motion 
-# python teleop_hand_and_arm.py --record --motion 
 
 import numpy as np
 import time
@@ -57,11 +55,16 @@ def on_press(key):
     elif key == 'q':
         START = False
         STOP = True
+
+
     elif key == 's' and START == True:
         RECORD_TOGGLE = True
         SUB_TASK_INDEX = 0
     elif key == 'p':
         SUB_TASK_INDEX += 1
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
         logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
     else:
         logger_mp.warning(f"[on_press] {key} was pressed, but no action is defined for this key.")
@@ -86,7 +89,7 @@ def get_state() -> dict:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--frequency', type = float, default = 30.0, help = 'save data\'s frequency')
+    parser.add_argument('--frequency', type = float, default = 15.0, help = 'save data\'s frequency')
 
     # basic control parameters
     parser.add_argument('--xr-mode', type=str, choices=['hand', 'controller'], default='controller', help='Select XR device tracking source')
@@ -100,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('--ipc', action = 'store_true', help = 'Enable IPC server to handle input; otherwise enable sshkeyboard')
     parser.add_argument('--record', action = 'store_true', help = 'Enable data recording')
     parser.add_argument('--task-dir', type = str, default = './utils/data/', help = 'path to save data')
-    parser.add_argument('--task-name', type = str, default = 'open_back_door', help = 'task name for recording')
+    parser.add_argument('--task-name', type = str, default = 'open_charge_door', help = 'task name for recording')
     parser.add_argument('--task-desc', type = str, default = '', help = 'task goal for recording')
 
     args = parser.parse_args()
@@ -119,7 +122,7 @@ if __name__ == '__main__':
     # image client: img_config should be the same as the configuration in image_server.py (of Robot's development computing unit)
     if args.sim:
         img_config = {
-            'fps': 30,
+            'fps': args.frequency,
             'head_camera_type': 'opencv',
             'head_camera_image_shape': [480, 640],  # Head camera resolution
             'head_camera_id_numbers': [0],
@@ -129,10 +132,10 @@ if __name__ == '__main__':
         }
     else:
         img_config = {
-            'fps': 15,
+            'fps': args.frequency,
             'head_camera_type': 'realsense',
             'head_camera_image_shape': [480, 640],  # Head camera resolution
-            'head_camera_id_numbers': ["243422072975", "235422300620"],  
+            'head_camera_id_numbers': ["243422072975"],    # D455: "235422300620"
             'wrist_camera_type': 'realsense',
             'wrist_camera_image_shape': [480, 640],  # Wrist camera resolution
             'wrist_camera_id_numbers': ["230322273453", "230322271901"], 
@@ -181,9 +184,11 @@ if __name__ == '__main__':
     tv_wrapper = TeleVuerWrapper(binocular=BINOCULAR, use_hand_tracking=args.xr_mode == "hand", img_shape=tv_img_shape, img_shm_name=tv_img_shm.name, 
                                 return_state_data=True, return_hand_rot_data = False)
 
+
     # arm
     if args.arm == "G1_29":
         arm_ik = G1_29_ArmIK()
+    
         arm_ctrl = G1_29_ArmController(motion_mode=args.motion, simulation_mode=args.sim)
     elif args.arm == "G1_23":
         arm_ik = G1_23_ArmIK()
@@ -194,6 +199,13 @@ if __name__ == '__main__':
     elif args.arm == "H1":
         arm_ik = H1_ArmIK()
         arm_ctrl = H1_ArmController(simulation_mode=args.sim)
+
+
+    # for i in range(100):
+    #     print("warming up televuer and image client:", i)
+    #     time.sleep(0.01)
+
+    
 
     # end-effector
     if args.ee == "dex3":
@@ -287,7 +299,13 @@ if __name__ == '__main__':
         sport_client = LocoClient()
         sport_client.SetTimeout(0.0001)
         sport_client.Init()
-    
+    else:
+        from unitree_sdk2py.g1.loco.g1_loco_client import LocoClient
+        sport_client = LocoClient()
+        sport_client.SetTimeout(0.0001)
+        sport_client.Init()
+
+
     # record + headless mode
     if args.record and args.headless:
         recorder = EpisodeWriter(task_dir = args.task_dir + args.task_name, task_goal = args.task_desc, frequency = args.frequency, rerun_log = False)
@@ -359,22 +377,21 @@ if __name__ == '__main__':
             # 右手B按钮控制: 按下时右手闭合,松开时双手张开
             if tele_data.tele_state.right_bButton:
                 with left_hand_pos_array.get_lock():
-                    left_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
+                    left_hand_pos_array[:] = np.array([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6])
                 with right_hand_pos_array.get_lock():
-                    right_hand_pos_array[:] = np.array([1.52, 0, 0, 1.47, 1.47, 1.47])
+                    right_hand_pos_array[:] = np.array([1.52, 1e-6, 1e-6, 1.47, 1.47, 1.47])
 
             elif tele_data.tele_state.left_bButton:
                 with left_hand_pos_array.get_lock():
-                    left_hand_pos_array[:] = np.array([1.52, 0, 0, 1.47, 1.47, 1.47])
+                    left_hand_pos_array[:] = np.array([1.52, 1e-6, 1e-6, 1.47, 1.47, 1.47])
                 with right_hand_pos_array.get_lock():
-                    right_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
+                    right_hand_pos_array[:] = np.array([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6])
 
             else:
                 with left_hand_pos_array.get_lock():
-                    left_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
+                    left_hand_pos_array[:] = np.array([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6])
                 with right_hand_pos_array.get_lock():
-                    right_hand_pos_array[:] = np.array([0, 0, 0, 0, 0, 0])
-                    
+                    right_hand_pos_array[:] = np.array([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6])
 
         elif args.ee == "dex1" and args.xr_mode == "hand":
             with right_hand_pos_array.get_lock():
