@@ -66,6 +66,10 @@ def on_press(key):
         logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
         logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
         logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
+        logger_mp.info(f"**************** sub task: {SUB_TASK_INDEX} *****************")
     else:
         logger_mp.warning(f"[on_press] {key} was pressed, but no action is defined for this key.")
 
@@ -103,7 +107,7 @@ if __name__ == '__main__':
     parser.add_argument('--ipc', action = 'store_true', help = 'Enable IPC server to handle input; otherwise enable sshkeyboard')
     parser.add_argument('--record', action = 'store_true', help = 'Enable data recording')
     parser.add_argument('--task-dir', type = str, default = './utils/data/', help = 'path to save data')
-    parser.add_argument('--task-name', type = str, default = 'open_charge_door', help = 'task name for recording')
+    parser.add_argument('--task-name', type = str, default = 'open_back_door', help = 'task name for recording')
     parser.add_argument('--task-desc', type = str, default = '', help = 'task goal for recording')
 
     args = parser.parse_args()
@@ -138,7 +142,7 @@ if __name__ == '__main__':
             'head_camera_id_numbers': ["243422072975"],    # D455: "235422300620"
             'wrist_camera_type': 'realsense',
             'wrist_camera_image_shape': [480, 640],  # Wrist camera resolution
-            'wrist_camera_id_numbers': ["230322273453", "230322271901"], 
+            'wrist_camera_id_numbers': ["235422300620","230322273453", "230322271901"], 
 
         }
 
@@ -168,7 +172,7 @@ if __name__ == '__main__':
         img_client = ImageClient(tv_img_shape = tv_img_shape, tv_img_shm_name = tv_img_shm.name, 
                                 wrist_img_shape = wrist_img_shape, wrist_img_shm_name = wrist_img_shm.name, server_address="127.0.0.1")
     elif WRIST and not args.sim:
-        wrist_img_shape = (img_config['wrist_camera_image_shape'][0], img_config['wrist_camera_image_shape'][1] * 2, 3)
+        wrist_img_shape = (img_config['wrist_camera_image_shape'][0], img_config['wrist_camera_image_shape'][1] * 3, 3)
         wrist_img_shm = shared_memory.SharedMemory(create = True, size = np.prod(wrist_img_shape) * np.uint8().itemsize)
         wrist_img_array = np.ndarray(wrist_img_shape, dtype = np.uint8, buffer = wrist_img_shm.buf)
         img_client = ImageClient(tv_img_shape = tv_img_shape, tv_img_shm_name = tv_img_shm.name, 
@@ -323,8 +327,12 @@ if __name__ == '__main__':
         start_time = time.time()
 
         if not args.headless:
-            tv_resized_image = cv2.resize(tv_img_array, (tv_img_shape[1] // 2, tv_img_shape[0] // 2))
-            cv2.imshow("record image", tv_resized_image)
+            tv_resized_image = cv2.resize(tv_img_array, (tv_img_shape[1]//2, tv_img_shape[0]//2))
+            mid_resized_image = cv2.resize(wrist_img_array[:, :wrist_img_shape[1]//3], (wrist_img_shape[1] // 6, wrist_img_shape[0]//2))
+            wrist_resized_image1 = cv2.resize(wrist_img_array[:, wrist_img_shape[1]//3:wrist_img_shape[1]//3*2], (wrist_img_shape[1]// 6, wrist_img_shape[0]//2))
+            wrist_resized_image2= cv2.resize(wrist_img_array[:, wrist_img_shape[1]//3*2:], (wrist_img_shape[1]// 6, wrist_img_shape[0]//2))
+            combined_image = np.hstack((tv_resized_image, mid_resized_image, wrist_resized_image1, wrist_resized_image2))
+            cv2.imshow("record image", combined_image)
             # opencv GUI communication
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
@@ -511,8 +519,9 @@ if __name__ == '__main__':
                 else:
                     colors[f"color_{0}"] = current_tv_image
                     if WRIST:
-                        colors[f"color_{1}"] = current_wrist_image[:, :wrist_img_shape[1]//2]
-                        colors[f"color_{2}"] = current_wrist_image[:, wrist_img_shape[1]//2:]
+                        colors[f"color_{1}"] = current_wrist_image[:, :wrist_img_shape[1]//3]
+                        colors[f"color_{2}"] = current_wrist_image[:, wrist_img_shape[1]//3: wrist_img_shape[1]//3*2 ]
+                        colors[f"color_{3}"] = current_wrist_image[:, wrist_img_shape[1]//3*2:]
                 states = {
                     "left_arm": {                                                                    
                         "qpos":   left_arm_state.tolist(),    # numpy.array -> list
